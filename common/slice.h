@@ -11,22 +11,22 @@ using PartitionConstraints = std::array<unsigned, 3>;
 
 template<class T>
 struct BasePS: public std::enable_shared_from_this<T> {
-    std::shared_ptr<T> get_shared_ptr() {
+    std::shared_ptr<T> getSharedPtr() {
         return (static_cast<T*>(this))->shared_from_this();
     }
-    std::shared_ptr<const T> get_shared_ptr() const {
+    std::shared_ptr<const T> getSharedPtr() const {
         return (static_cast<const T*>(this))->shared_from_this();
     }
 
-    void clear_changed_flag() {
-        m_changed_flag = false;
+    void clearChangedFlag() {
+        m_changedFlag = false;
     }
 
-    bool get_changed_flag() const {
-        return m_changed_flag;
+    bool getChangedFlag() const {
+        return m_changedFlag;
     }
 
-    bool             m_changed_flag = false;
+    bool             m_changedFlag = false;
     template<class Tf, int MAX_ID> friend class ParameterSetMap;
 };
 
@@ -105,7 +105,6 @@ public:
     bool getDeltaPocMSBPresentFlag( int i ) const { return m_deltaPocMSBPresentFlag[i]; }
     void setDeltaPocMSBPresentFlag( int i, bool x );
 
-    void printRefPicInfo() const;
     bool getInterLayerPresentFlag() const { return m_interLayerPresentFlag; }
     void setInterLayerPresentFlag( bool b ) { m_interLayerPresentFlag = b; }
     bool isInterLayerRefPic( int idx ) const { return m_isInterLayerRefPic[idx]; }
@@ -116,6 +115,31 @@ public:
 
     static int calcLTRefPOC( int currPoc, int bitsForPoc, int refPicIdentifier, bool pocMSBPresent, int deltaPocMSBCycle );
     int        calcLTRefPOC( int currPoc, int bitsForPoc, int refPicIdx ) const;
+};
+
+typedef std::vector<ReferencePictureList> RPLList;
+
+class ScalingList {
+public:
+    ScalingList();
+    ~ScalingList() = default;
+    CLASS_COPY_MOVE_DEFAULT( ScalingList )
+
+    void       reset();
+
+    static inline int  matrixSize( uint32_t scalingListId )   { return scalingListId < SCALING_LIST_1D_START_4x4 ? 2 : scalingListId < SCALING_LIST_1D_START_8x8 ? 4 : 8; }
+    static inline bool isLumaScalingList( int scalingListId ) { return scalingListId % MAX_NUM_COMPONENT == SCALING_LIST_1D_START_4x4 || scalingListId == SCALING_LIST_1D_START_64x64 + 1;}
+
+    void              setScalingListDC(uint32_t scalingListId, uint32_t u)             { m_scalingListDC[scalingListId] = u;                       } //!< set DC value
+    int               getScalingListDC(uint32_t scalingListId) const                   { return m_scalingListDC[scalingListId];                    } //!< get DC value
+
+    int*              getScalingListAddress(uint32_t scalingListId)                    { return m_scalingListCoef[scalingListId].data();           } //!< get matrix coefficient
+    const int*        getScalingListAddress(uint32_t scalingListId) const              { return m_scalingListCoef[scalingListId].data();           } //!< get matrix coefficient
+    std::vector<int>& getScalingListVec( uint32_t scalingListId )                      { return m_scalingListCoef[scalingListId]; }
+
+private:
+    int              m_scalingListDC  [28] = { 0 }; //!< the DC value of the matrix coefficient for 16x16
+    std::vector<int> m_scalingListCoef[28];         //!< quantization matrix
 };
 
 
@@ -193,7 +217,7 @@ private:
     bool              m_BDPCMEnabledFlag                   = false;
     bool              m_JointCbCrEnabledFlag               = false;
     // Parameter
-    BitDepths         m_bitDepths;
+    int               m_bitDepths;
     bool              m_entropyCodingSyncEnabledFlag       = false;              //!< Flag for enabling WPP
     bool              m_entryPointPresentFlag              = false;              //!< Flag for indicating the presence of entry points
     int               m_qpBDOffset                         = 0;

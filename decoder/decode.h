@@ -26,12 +26,12 @@ typedef enum {
 
 typedef struct AccessUnit {
     unsigned char* payload;
-    int payload_size;
-    int payload_used_size;
+    int payloadSize;
+    int payloadUsedSize;
     uint64_t cts;
     uint64_t dts;
-    bool cts_valid;
-    bool dts_valid;
+    bool ctsValid;
+    bool dtsValid;
     bool rap;
 } AccessUnit;
 
@@ -47,7 +47,7 @@ typedef struct Plane {
     uint32_t width;
     uint32_t height;
     uint32_t stride;
-    uint32_t bytes_per_sample;
+    uint32_t bytesPerSample;
     void *allocator;
 } Plane;
 
@@ -101,22 +101,22 @@ typedef enum {
 } SliceType;
 
 typedef struct PicAttributes {
-    NalType nal_type;
-    SliceType slice_type;
-    bool is_ref_pic;
-    uint32_t temporal_layer;
+    NalType nalType;
+    SliceType sliceType;
+    bool isRefPic;
+    uint32_t temporalLayer;
     int64_t poc;
     uint32_t bits;
 } PicAttributes;
 
 typedef struct Frame {
     Plane planes[MAX_NUM_COMPONENT];
-    uint32_t num_planes;
+    uint32_t numPlanes;
     uint32_t width;
     uint32_t height;
     uint32_t bitDepth;
     uint64_t cts;
-    bool cts_valid;
+    bool ctsValid;
     PicAttributes *picAttributes;
 } Frame;
 
@@ -141,7 +141,7 @@ public:
 
     class FrameStorage {
     public:
-        int allocate_storage(size_t size) {
+        int allocateStorage(size_t size) {
             if(size == 0) {
                 return W266_ERR_ALLOCATE;
             }
@@ -150,7 +150,7 @@ public:
             return 0;
         }
 
-        int free_storage() {
+        int freeStorage() {
             if(!m_ptr) {
                 return W266_ERR_ALLOCATE;
             }
@@ -163,9 +163,9 @@ public:
             return m_ptr.get();
         }
 
-        bool is_allocated() {return !!m_ptr;}
-        bool is_extern_allocator() {return m_is_extern_allocator;}
-        void set_extern_allocator() {m_is_extern_allocator = true;}
+        bool isAllocated() {return !!m_ptr;}
+        bool isExternAllocator() {return m_is_extern_allocator;}
+        void setExternAllocator() {m_is_extern_allocator = true;}
 
     private:
         std::unique_ptr<unsigned char[]> m_ptr = nullptr;   // pointer to plane buffer
@@ -180,10 +180,10 @@ public:
     int reset();
 
 private:
-    typedef std::tuple<Frame, Picture*> frame_list_entry;
-    typedef std::map<uint64_t, FrameStorage> frame_storage_map;
-    typedef frame_storage_map::value_type frame_storage_map_type;
-}
+    // typedef std::tuple<Frame, Picture*> frame_list_entry;
+    // typedef std::map<uint64_t, FrameStorage> frame_storage_map;
+    // typedef frame_storage_map::value_type frame_storage_map_type;
+};
 
-AccessUnit* access_unit_alloc();
-void access_unit_alloc_payload(AccessUnit *access_unit, int payload_size);
+// AccessUnit* access_unit_alloc();
+// void access_unit_alloc_payload(AccessUnit *access_unit, int payload_size);

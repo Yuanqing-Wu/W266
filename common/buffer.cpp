@@ -40,7 +40,7 @@ void AreaBuf<T>::memset(const int val) {
 }
 
 template<typename T>
-void AreaBuf<T>::copy_from(const AreaBuf<const T> &other) {
+void AreaBuf<T>::copyFrom(const AreaBuf<const T> &other) {
     CHECK_FATAL(width  != other.width,  "Incompatible size");
     CHECK_FATAL(height != other.height, "Incompatible size");
 
@@ -53,13 +53,13 @@ void AreaBuf<T>::copy_from(const AreaBuf<const T> &other) {
     } else {
         T* dst                     =       buf;
         const T* src               = other.buf;
-        const ptrdiff_t src_stride = other.stride;
+        const ptrdiff_t srcStride = other.stride;
 
         for(unsigned y = 0; y < height; y++) {
             memcpy(dst, src, width * sizeof(T));
 
             dst += stride;
-            src += src_stride;
+            src += srcStride;
         }
     }
 }
@@ -80,7 +80,7 @@ void AreaBuf<Pel>::reconstruct(const AreaBuf<const Pel> &pred, const AreaBuf<con
     const ptrdiff_t src2_stride = resi.stride;
     const ptrdiff_t dst_stride  =      stride;
 
-#define RECO_OP(ADDR) dest[ADDR] = clip_pel(src1[ADDR] + src2[ADDR], clp_rng)
+#define RECO_OP(ADDR) dest[ADDR] = clipPel(src1[ADDR] + src2[ADDR], clp_rng)
 #define RECO_INC         \
     src1 += src1_stride; \
     src2 += src2_stride; \
@@ -113,7 +113,7 @@ void AreaBuf<T>::subtract(const AreaBuf<const T> &other) {
 }
 
 template<typename T>
-void AreaBuf<T>::extend_border_pel(unsigned margin) {
+void AreaBuf<T>::extendBorderPel(unsigned margin) {
     T*        p = buf;
     int       h = height;
     int       w = width;
@@ -136,16 +136,16 @@ void AreaBuf<T>::extend_border_pel(unsigned margin) {
         ::memcpy(p + (y + 1) * s, p, sizeof(T) * (w + (margin << 1)));
     }
 
-    // pi is still (-margin_x, height-1)
+    // pi is still (-marginX, height-1)
     p -= ((h - 1) * s);
-    // pi is now (-margin_x, 0)
+    // pi is now (-marginX, 0)
     for(int y = 0; y < margin; y++) {
         ::memcpy(p - (y + 1) * s, p, sizeof(T) * (w + (margin << 1)));
     }
 }
 
 template<typename T>
-void AreaBuf<T>::extend_border_pel(unsigned margin, bool left, bool right, bool top, bool bottom) {
+void AreaBuf<T>::extendBorderPel(unsigned margin, bool left, bool right, bool top, bool bottom) {
     CHECK_FATAL((width + left*margin + right*margin) > stride, "Size of buffer too small to extend");
     // do left and right margins
 
@@ -193,7 +193,7 @@ void AreaBuf<T>::extend_border_pel(unsigned margin, bool left, bool right, bool 
         if(left)
             p -= margin;
 
-        // pi is now (-margin_x, 0)
+        // pi is now (-marginX, 0)
         for(int y = -(int)margin; y < 0; y++) {
             ::memcpy(p + y * stride, p, sizeof(T) * copylen);
         }
@@ -201,7 +201,7 @@ void AreaBuf<T>::extend_border_pel(unsigned margin, bool left, bool right, bool 
 }
 
 template<typename T>
-void AreaBuf<T>::pad_border_pel(unsigned margin_x, unsigned margin_y, int dir) {
+void AreaBuf<T>::padBorderPel(unsigned marginX, unsigned marginY, int dir) {
     T*   p = buf;
     auto s = stride;
     int  h = height;
@@ -211,9 +211,9 @@ void AreaBuf<T>::pad_border_pel(unsigned margin_x, unsigned margin_y, int dir) {
 
     // top-left margin
     if (dir == 1) {
-        for(int y = 0; y < margin_y; y++) {
-            for(int x = 0; x < margin_x; x++) {
-                p[x] = p[margin_x];
+        for(int y = 0; y < marginY; y++) {
+            for(int x = 0; x < marginX; x++) {
+                p[x] = p[marginX];
             }
             p += s;
         }
@@ -221,10 +221,10 @@ void AreaBuf<T>::pad_border_pel(unsigned margin_x, unsigned margin_y, int dir) {
 
     // bottom-right margin
     if (dir == 2) {
-        p = buf + s * (h - margin_y) + w - margin_x;
+        p = buf + s * (h - marginY) + w - marginX;
 
-        for(int y = 0; y < margin_y; y++) {
-            for(int x = 0; x < margin_x; x++) {
+        for(int y = 0; y < marginY; y++) {
+            for(int x = 0; x < marginX; x++) {
                 p[x] = p[-1];
             }
             p += s;
@@ -240,8 +240,8 @@ void UnitBuf<T>::fill(const T &val) {
 }
 
 template<typename T>
-void UnitBuf<T>::copy_from(const UnitBuf<const T> &other) {
-    CHECK_FATAL(chroma_format != other.chroma_format, "Incompatible formats");
+void UnitBuf<T>::copyFrom(const UnitBuf<const T> &other) {
+    CHECK_FATAL(chromaFormat != other.chromaFormat, "Incompatible formats");
 
     for(unsigned i = 0; i < bufs.size(); i++) {
         bufs[i].copyFrom(other.bufs[i]);
@@ -250,7 +250,7 @@ void UnitBuf<T>::copy_from(const UnitBuf<const T> &other) {
 
 template<typename T>
 void UnitBuf<T>::subtract(const UnitBuf<const T> &other) {
-    CHECK_FATAL(chroma_format != other.chroma_format, "Incompatible formats");
+    CHECK_FATAL(chromaFormat != other.chromaFormat, "Incompatible formats");
 
     for(unsigned i = 0; i < bufs.size(); i++) {
         bufs[i].subtract(other.bufs[i]);
@@ -259,8 +259,8 @@ void UnitBuf<T>::subtract(const UnitBuf<const T> &other) {
 
 template<typename T>
 void UnitBuf<T>::reconstruct(const UnitBuf<const T> &pred, const UnitBuf<const T> &resi, const ClpRng& clp_rngs) {
-    CHECK_FATAL(chroma_format != pred.chroma_format, "Incompatible formats");
-    CHECK_FATAL(chroma_format != resi.chroma_format, "Incompatible formats");
+    CHECK_FATAL(chromaFormat != pred.chromaFormat, "Incompatible formats");
+    CHECK_FATAL(chromaFormat != resi.chromaFormat, "Incompatible formats");
 
     for(unsigned i = 0; i < bufs.size(); i++) {
         bufs[i].reconstruct(pred.bufs[i], resi.bufs[i], clp_rngs);
@@ -268,93 +268,93 @@ void UnitBuf<T>::reconstruct(const UnitBuf<const T> &pred, const UnitBuf<const T
 }
 
 template<typename T>
-void UnitBuf<T>::extend_border_pel(unsigned margin) {
+void UnitBuf<T>::extendBorderPel(unsigned margin) {
     for(unsigned i = 0; i < bufs.size(); i++) {
-        bufs[i].extend_border_pel(margin);
+        bufs[i].extendBorderPel(margin);
     }
 }
 
 template<typename T>
-void UnitBuf<T>::extend_border_pel(unsigned margin, bool left, bool right, bool top, bool bottom) {
+void UnitBuf<T>::extendBorderPel(unsigned margin, bool left, bool right, bool top, bool bottom) {
     for(unsigned i = 0; i < bufs.size(); i++) {
-        bufs[i].extend_border_pel(margin, left, right, top, bottom);
+        bufs[i].extendBorderPel(margin, left, right, top, bottom);
     }
 }
 
 template<typename T>
-void UnitBuf<T>::pad_border_pel(unsigned margin, int dir) {
+void UnitBuf<T>::padBorderPel(unsigned margin, int dir) {
     for(unsigned i = 0; i < bufs.size(); i++) {
-        bufs[i].pad_border_pel(margin >> get_comp_scale_x(ComponentID(i), chroma_format), margin >> get_comp_scale_y(ComponentID(i), chroma_format), dir);
+        bufs[i].padBorderPel(margin >> getCompScaleX(ComponentID(i), chromaFormat), margin >> getCompScaleY(ComponentID(i), chromaFormat), dir);
     }
 }
 
 template<typename T>
-UnitBuf<T> UnitBuf<T>::sub_buf(const UnitArea& sub_area) {
-  UnitBuf<T> sub_buf;
-  sub_buf.chroma_format = chroma_format;
+UnitBuf<T> UnitBuf<T>::subBuf(const UnitArea& subArea) {
+  UnitBuf<T> subBuf;
+  subBuf.chromaFormat = chromaFormat;
   unsigned block_idx = 0;
 
-  for(auto &sub_area_buf : bufs) {
-    sub_buf.bufs.push_back(sub_area_buf.sub_buf(sub_area.blocks[block_idx].pos(), sub_area.blocks[block_idx].size()));
+  for(auto &subAreaBuf : bufs) {
+    subBuf.bufs.push_back(subAreaBuf.subBuf(subArea.blocks[block_idx].pos(), subArea.blocks[block_idx].size()));
     block_idx++;
   }
 
-  return sub_buf;
+  return subBuf;
 }
 
 
 template<typename T>
-const UnitBuf<const T> UnitBuf<T>::sub_buf(const UnitArea& sub_area) const {
-  UnitBuf<const T> sub_buf;
-  sub_buf.chroma_format = chroma_format;
+const UnitBuf<const T> UnitBuf<T>::subBuf(const UnitArea& subArea) const {
+  UnitBuf<const T> subBuf;
+  subBuf.chromaFormat = chromaFormat;
   unsigned block_idx = 0;
 
-  for(const auto &sub_area_buf : bufs) {
-    sub_buf.bufs.push_back(sub_area_buf.sub_buf(sub_area.blocks[block_idx].pos(), sub_area.blocks[block_idx].size()));
+  for(const auto &subAreaBuf : bufs) {
+    subBuf.bufs.push_back(subAreaBuf.subBuf(subArea.blocks[block_idx].pos(), subArea.blocks[block_idx].size()));
     block_idx++;
   }
 
-  return sub_buf;
+  return subBuf;
 }
 
 template<typename T>
-UnitBuf<T> UnitBuf<T>::sub_buf(const Area & sub_area) {
-  UnitBuf<T> sub_buf;
-  sub_buf.chroma_format = chroma_format;
+UnitBuf<T> UnitBuf<T>::subBuf(const Area & subArea) {
+  UnitBuf<T> subBuf;
+  subBuf.chromaFormat = chromaFormat;
   unsigned block_idx = 0;
 
-  for(auto &sub_area_buf : bufs) {
-    const int scale_x = get_comp_scale_x(ComponentID(block_idx), chroma_format);
-    const int scale_y = get_comp_scale_y(ComponentID(block_idx), chroma_format);
-    const Area scaled_area(sub_area.pos().x >> scale_x, sub_area.pos().y >> scale_y, sub_area.size().width >> scale_x, sub_area.size().height >> scale_y);
-    sub_buf.bufs.push_back(sub_area_buf.sub_buf(scaled_area.pos(), scaled_area.size()));
+  for(auto &subAreaBuf : bufs) {
+    const int scaleX = getCompScaleX(ComponentID(block_idx), chromaFormat);
+    const int scaleY = getCompScaleY(ComponentID(block_idx), chromaFormat);
+    const Area scaledArea(subArea.pos().x >> scaleX, subArea.pos().y >> scaleY, subArea.size().width >> scaleX, subArea.size().height >> scaleY);
+    subBuf.bufs.push_back(subAreaBuf.subBuf(scaledArea.pos(), scaledArea.size()));
     block_idx++;
   }
 
-  return sub_buf;
+  return subBuf;
 }
 
 template<typename T>
-const UnitBuf<const T> UnitBuf<T>::sub_buf(const Area & sub_area) const {
-  UnitBuf<T> sub_buf;
-  sub_buf.chroma_format = chroma_format;
+const UnitBuf<const T> UnitBuf<T>::subBuf(const Area & subArea) const {
+  UnitBuf<T> subBuf;
+  subBuf.chromaFormat = chromaFormat;
   unsigned block_idx = 0;
 
-  for(auto &sub_area_buf : bufs) {
-    const int scale_x = get_comp_scale_x(ComponentID(block_idx), chroma_format);
-    const int scale_y = get_comp_scale_y(ComponentID(block_idx), chroma_format);
-    const Area scaled_area(sub_area.pos().x >> scale_x, sub_area.pos().y >> scale_y, sub_area.size().width >> scale_x, sub_area.size().height >> scale_y);
-    sub_buf.bufs.push_back(sub_area_buf.sub_buf(scaled_area.pos(), scaled_area.size()));
+  for(auto &subAreaBuf : bufs) {
+    const int scaleX = getCompScaleX(ComponentID(block_idx), chromaFormat);
+    const int scaleY = getCompScaleY(ComponentID(block_idx), chromaFormat);
+    const Area scaledArea(subArea.pos().x >> scaleX, subArea.pos().y >> scaleY, subArea.size().width >> scaleX, subArea.size().height >> scaleY);
+    subBuf.bufs.push_back(subAreaBuf.subBuf(scaledArea.pos(), scaledArea.size()));
     block_idx++;
   }
 
-  return sub_buf;
+  return subBuf;
 }
 
 PelStorage::PelStorage() {
     for(uint32_t i = 0; i < MAX_NUM_COMPONENT; i++)
     {
-        m_origin[i]        = nullptr;
+        m_Origin[i]        = nullptr;
     }
 }
 
@@ -363,122 +363,122 @@ PelStorage::~PelStorage() {
 }
 
 void PelStorage::swap(PelStorage& other) {
-    const uint32_t num_ch = get_number_valid_comps(chroma_format);
+    const uint32_t numCh = getNumberValidComps(chromaFormat);
 
-    for(uint32_t i = 0; i < num_ch; i++) {
+    for(uint32_t i = 0; i < numCh; i++) {
         // check this otherwise it would turn out to get very weird
-        CHECK_FATAL(chroma_format              != other.chroma_format             , "Incompatible formats");
+        CHECK_FATAL(chromaFormat              != other.chromaFormat             , "Incompatible formats");
         CHECK_FATAL(get(ComponentID(i))        != other.get(ComponentID(i))       , "Incompatible formats");
         CHECK_FATAL(get(ComponentID(i)).stride != other.get(ComponentID(i)).stride, "Incompatible formats");
 
         std::swap(bufs[i].buf,    other.bufs[i].buf);
         std::swap(bufs[i].stride, other.bufs[i].stride);
-        std::swap(m_origin[i],    other.m_origin[i]);
+        std::swap(m_Origin[i],    other.m_Origin[i]);
     }
 }
 
-void PelStorage::create_from_buf(PelUnitBuf buf) {
-    chroma_format = buf.chroma_format;
+void PelStorage::createFromBuf(PelUnitBuf buf) {
+    chromaFormat = buf.chromaFormat;
 
-    const uint32_t num_ch = get_number_valid_comps(chroma_format);
+    const uint32_t numCh = getNumberValidComps(chromaFormat);
 
-    bufs.resize(num_ch);
+    bufs.resize(numCh);
 
-    for(uint32_t i = 0; i < num_ch; i++) {
+    for(uint32_t i = 0; i < numCh; i++) {
         PelBuf cPelBuf = buf.get(ComponentID(i));
-        bufs[i] = PelBuf(cPelBuf.buf_at(0, 0), cPelBuf.stride, cPelBuf.width, cPelBuf.height);
+        bufs[i] = PelBuf(cPelBuf.bufAt(0, 0), cPelBuf.stride, cPelBuf.width, cPelBuf.height);
     }
 }
 
 void PelStorage::create(const UnitArea &_UnitArea) {
-    create(_UnitArea.chroma_format, _UnitArea.blocks[0]);
+    create(_UnitArea.chromaFormat, _UnitArea.blocks[0]);
 }
 
-void PelStorage::create(const ChromaFormat _chroma_format, const Size& _size, const unsigned _max_cu_size, const unsigned _margin, const unsigned _alignment_byte, const bool _scale_chroma_margin) {
+void PelStorage::create(const ChromaFormat _chromaFormat, const Size& _size, const unsigned _maxCUSize, const unsigned _margin, const unsigned _alignmentByte, const bool _scaleChromaMargin) {
     CHECK_FATAL(!bufs.empty(), "Trying to re-create an already initialized buffer");
 
-    chroma_format = _chroma_format;
+    chromaFormat = _chromaFormat;
 
-    const uint32_t num_ch = get_number_valid_comps(_chroma_format);
+    const uint32_t numCh = getNumberValidComps(_chromaFormat);
 
-    unsigned ext_height = _size.height;
-    unsigned ext_width  = _size.width;
+    unsigned extHeight = _size.height;
+    unsigned extWidth  = _size.width;
 
-    if(_max_cu_size) {
-        ext_height = ((_size.height + _max_cu_size - 1) / _max_cu_size) * _max_cu_size;
-        ext_width  = ((_size.width  + _max_cu_size - 1) / _max_cu_size) * _max_cu_size;
+    if(_maxCUSize) {
+        extHeight = ((_size.height + _maxCUSize - 1) / _maxCUSize) * _maxCUSize;
+        extWidth  = ((_size.width  + _maxCUSize - 1) / _maxCUSize) * _maxCUSize;
     }
 
-    const unsigned _alignment = _alignment_byte / sizeof(Pel);
+    const unsigned _alignment = _alignmentByte / sizeof(Pel);
 
-    for(uint32_t i = 0; i < num_ch; i++) {
-        const ComponentID comp_id = ComponentID(i);
-        const unsigned scale_x = get_comp_scale_x(comp_id, _chroma_format);
-        const unsigned scale_y = get_comp_scale_y(comp_id, _chroma_format);
+    for(uint32_t i = 0; i < numCh; i++) {
+        const ComponentID compId = ComponentID(i);
+        const unsigned scaleX = getCompScaleX(compId, _chromaFormat);
+        const unsigned scaleY = getCompScaleY(compId, _chromaFormat);
 
-        unsigned scaled_height = ext_height >> scale_y ;
-        unsigned scaled_width  = ext_width  >> scale_x;
-        unsigned ymargin      = _margin >> (_scale_chroma_margin ? scale_y : 0);
-        unsigned xmargin      = _margin >> (_scale_chroma_margin ? scale_x : 0);
+        unsigned scaledHeight = extHeight >> scaleY ;
+        unsigned scaledWidth  = extWidth  >> scaleX;
+        unsigned ymargin      = _margin >> (_scaleChromaMargin ? scaleY : 0);
+        unsigned xmargin      = _margin >> (_scaleChromaMargin ? scaleX : 0);
 
         if(_alignment && xmargin) {
             xmargin = ((xmargin + _alignment - 1) / _alignment) * _alignment;
         }
 
-        SizeType total_width   = scaled_width + 2 * xmargin;
-        SizeType total_height  = scaled_height +2 * ymargin;
+        SizeType totalWidth   = scaledWidth + 2 * xmargin;
+        SizeType totalHeight  = scaledHeight +2 * ymargin;
 
         if(_alignment) {
             // make sure buffer lines are align
-            CHECK_FATAL(_alignment_byte != MEMORY_ALIGN_DEF_SIZE, "Unsupported alignment");
-            total_width = ((total_width + _alignment - 1) / _alignment) * _alignment;
+            CHECK_FATAL(_alignmentByte != MEMORY_ALIGN_DEF_SIZE, "Unsupported alignment");
+            totalWidth = ((totalWidth + _alignment - 1) / _alignment) * _alignment;
         }
 
-        uint32_t area = total_width * total_height;
+        uint32_t area = totalWidth * totalHeight;
         CHECK_FATAL(!area, "Trying to create a buffer with zero area");
 
-        m_orig_size[i] = Size{ total_width, total_height };
-        m_origin[i] = (Pel*) x_malloc(Pel, area);
-        Pel* topLeft = m_origin[i] + total_width * ymargin + xmargin;
-        bufs.push_back(PelBuf(topLeft, total_width, _size.width >> scale_x, _size.height >> scale_y));
+        m_OrigSize[i] = Size{ totalWidth, totalHeight };
+        m_Origin[i] = (Pel*) xMalloc(Pel, area);
+        Pel* topLeft = m_Origin[i] + totalWidth * ymargin + xmargin;
+        bufs.push_back(PelBuf(topLeft, totalWidth, _size.width >> scaleX, _size.height >> scaleY));
     }
 }
 
 void PelStorage::destroy() {
-    chroma_format = NUM_CHROMA_FORMAT;
+    chromaFormat = NUM_CHROMA_FORMAT;
     for(uint32_t i = 0; i < MAX_NUM_COMPONENT; i++) {
-        if(m_origin[i]) {
-            m_origin[i] = nullptr;
+        if(m_Origin[i]) {
+            m_Origin[i] = nullptr;
         }
     }
     bufs.clear();
 }
 
-PelBuf PelStorage::get_buf(const ComponentID comp_id) {
-    return bufs[comp_id];
+PelBuf PelStorage::getBuf(const ComponentID compId) {
+    return bufs[compId];
 }
 
-const CPelBuf PelStorage::get_buf(const ComponentID comp_id) const {
-    return bufs[comp_id];
+const CPelBuf PelStorage::getBuf(const ComponentID compId) const {
+    return bufs[compId];
 }
 
-PelBuf PelStorage::get_buf(const CompArea &blk) {
-    const PelBuf& r = bufs[blk.comp_id()];
+PelBuf PelStorage::getBuf(const CompArea &blk) {
+    const PelBuf& r = bufs[blk.compId()];
 
-    CHECKD(rs_addr(blk.bottom_right(), r.stride) >= ((r.height - 1) * r.stride + r.width), "Trying to access a buf outside of bound!");
+    CHECKD(rsAddr(blk.bottom_right(), r.stride) >= ((r.height - 1) * r.stride + r.width), "Trying to access a buf outside of bound!");
 
-    return PelBuf(r.buf + rs_addr(blk, r.stride), r.stride, blk);
+    return PelBuf(r.buf + rsAddr(blk, r.stride), r.stride, blk);
 }
 
-const CPelBuf PelStorage::get_buf(const CompArea &blk) const {
-    const PelBuf& r = bufs[blk.comp_id()];
-    return CPelBuf(r.buf + rs_addr(blk, r.stride), r.stride, blk);
+const CPelBuf PelStorage::getBuf(const CompArea &blk) const {
+    const PelBuf& r = bufs[blk.compId()];
+    return CPelBuf(r.buf + rsAddr(blk, r.stride), r.stride, blk);
 }
 
-PelUnitBuf PelStorage::get_buf(const UnitArea &unit) {
-    return (chroma_format == CHROMA_400) ? PelUnitBuf(chroma_format, get_buf(unit.Y())) : PelUnitBuf(chroma_format, get_buf(unit.Y()), get_buf(unit.Cb()), get_buf(unit.Cr()));
+PelUnitBuf PelStorage::getBuf(const UnitArea &unit) {
+    return (chromaFormat == CHROMA_400) ? PelUnitBuf(chromaFormat, getBuf(unit.Y())) : PelUnitBuf(chromaFormat, getBuf(unit.Y()), getBuf(unit.Cb()), getBuf(unit.Cr()));
 }
 
-const CPelUnitBuf PelStorage::get_buf(const UnitArea &unit) const {
-    return (chroma_format == CHROMA_400) ? CPelUnitBuf(chroma_format, get_buf(unit.Y())) : CPelUnitBuf(chroma_format, get_buf(unit.Y()), get_buf(unit.Cb()), get_buf(unit.Cr()));
+const CPelUnitBuf PelStorage::getBuf(const UnitArea &unit) const {
+    return (chromaFormat == CHROMA_400) ? CPelUnitBuf(chromaFormat, getBuf(unit.Y())) : CPelUnitBuf(chromaFormat, getBuf(unit.Y()), getBuf(unit.Cb()), getBuf(unit.Cr()));
 }

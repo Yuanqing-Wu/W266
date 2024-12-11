@@ -21,8 +21,8 @@ struct ClpRngTemplate {
 typedef ClpRngTemplate<Pel> ClpRng;
 
 template <typename T> constexpr static inline T clip3  (const T min, const T max, const T a) { return std::min<T> (std::max<T> (min, a) , max); }  ///< general min/max clip
-template <typename T> constexpr static inline T clip_bd (const T x, const int bit_depth)             { return clip3(T(0), T((1 << bit_depth) - 1), x); }
-template <typename T> constexpr static inline T clip_pel(const T a, const ClpRng& clp_rng)           { return clip_bd(a, clp_rng. bd); }  ///< clip reconstruction
+template <typename T> constexpr static inline T clipBD (const T x, const int bit_depth)             { return clip3(T(0), T((1 << bit_depth) - 1), x); }
+template <typename T> constexpr static inline T clipPel(const T a, const ClpRng& clp_rng)           { return clipBD(a, clp_rng. bd); }  ///< clip reconstruction
 
 static const int MAX_NUM_REF_PICS =                                16; ///< max. number of pictures used for reference
 static const int MAX_NUM_REF =                                     16; ///< max. number of entries in picture reference list
@@ -30,10 +30,13 @@ static const int MAX_QP =                                          63;
 static const int NOT_VALID =                                       -1;
 
 static const int MAX_NUM_SUB_PICS =                               255;
+static const int MAX_NUM_LONG_TERM_REF_PICS =                      33;
+
+static const int MAX_TLAYER =                                       7; ///< Explicit temporal layer QP offset - max number of temporal layer
 
 #define MEMORY_ALIGN_DEF_SIZE       32  // for use with avx2 (256 bit)
 
-#define x_malloc(type, len) detail::aligned_malloc<type>(len, MEMORY_ALIGN_DEF_SIZE)
+#define xMalloc(type, len) detail::aligned_malloc<type>(len, MEMORY_ALIGN_DEF_SIZE)
 
 namespace detail {
     template<typename T>
@@ -123,19 +126,28 @@ enum NalUnitType {
     NAL_UNIT_INVALID
 };
 
-static inline ChannelType to_channel_type               (const ComponentID id)                         { return (id==COMPONENT_Y) ? CHANNEL_TYPE_LUMA : CHANNEL_TYPE_CHROMA; }
-static inline bool        is_luma                       (const ComponentID id)                         { return (id==COMPONENT_Y);                                           }
-static inline bool        is_luma                       (const ChannelType id)                         { return (id==CHANNEL_TYPE_LUMA);                                     }
-static inline bool        is_chroma                     (const ComponentID id)                         { return (id!=COMPONENT_Y);                                           }
-static inline bool        is_chroma                     (const ChannelType id)                         { return (id!=CHANNEL_TYPE_LUMA);                                     }
-static inline uint32_t    get_channal_type_scale_x      (const ChannelType id, const ChromaFormat fmt) { return (is_luma(id) || (fmt==CHROMA_444)) ? 0 : 1;                  }
-static inline uint32_t    get_channal_type_scale_y      (const ChannelType id, const ChromaFormat fmt) { return (is_luma(id) || (fmt!=CHROMA_420)) ? 0 : 1;                  }
-static inline uint32_t    get_comp_scale_x              (const ComponentID id, const ChromaFormat fmt) { return get_channal_type_scale_x(to_channel_type(id), fmt);          }
-static inline uint32_t    get_comp_scale_y              (const ComponentID id, const ChromaFormat fmt) { return get_channal_type_scale_y(to_channel_type(id), fmt);          }
-static inline uint32_t    get_number_valid_comps        (const ChromaFormat fmt)                       { return (fmt==CHROMA_400) ? 1 : MAX_NUM_COMPONENT;                   }
-static inline uint32_t    get_number_valid_channels     (const ChromaFormat fmt)                       { return (fmt==CHROMA_400) ? 1 : MAX_NUM_CHANNEL_TYPE;                }
-static inline bool        is_chroma_enabled             (const ChromaFormat fmt)                       { return !(fmt==CHROMA_400);                                          }
-static inline ComponentID get_first_comp_of_channel     (const ChannelType id)                         { return (is_luma(id) ? COMPONENT_Y : COMPONENT_Cb);                  }
+static inline ChannelType toChannelType             (const ComponentID id)                         { return (id==COMPONENT_Y) ? CHANNEL_TYPE_LUMA : CHANNEL_TYPE_CHROMA; }
+static inline bool        isLuma                    (const ComponentID id)                         { return (id==COMPONENT_Y);                                           }
+static inline bool        isLuma                    (const ChannelType id)                         { return (id==CHANNEL_TYPE_LUMA);                                     }
+static inline bool        isChroma                  (const ComponentID id)                         { return (id!=COMPONENT_Y);                                           }
+static inline bool        isChroma                  (const ChannelType id)                         { return (id!=CHANNEL_TYPE_LUMA);                                     }
+static inline uint32_t    getChannalTypeScaleX      (const ChannelType id, const ChromaFormat fmt) { return (isLuma(id) || (fmt==CHROMA_444)) ? 0 : 1;                  }
+static inline uint32_t    getChannalTypeScaleY      (const ChannelType id, const ChromaFormat fmt) { return (isLuma(id) || (fmt!=CHROMA_420)) ? 0 : 1;                  }
+static inline uint32_t    getCompScaleX             (const ComponentID id, const ChromaFormat fmt) { return getChannalTypeScaleX(toChannelType(id), fmt);          }
+static inline uint32_t    getCompScaleY             (const ComponentID id, const ChromaFormat fmt) { return getChannalTypeScaleY(toChannelType(id), fmt);          }
+static inline uint32_t    getNumberValidComps       (const ChromaFormat fmt)                       { return (fmt==CHROMA_400) ? 1 : MAX_NUM_COMPONENT;                   }
+static inline uint32_t    getNumberValidChannels    (const ChromaFormat fmt)                       { return (fmt==CHROMA_400) ? 1 : MAX_NUM_CHANNEL_TYPE;                }
+static inline bool        isChromaEnabled           (const ChromaFormat fmt)                       { return !(fmt==CHROMA_400);                                          }
+static inline ComponentID getFirstCompOfChannel     (const ChannelType id)                         { return (isLuma(id) ? COMPONENT_Y : COMPONENT_Cb);                  }
+
+enum ScalingList1dStartIdx {
+    SCALING_LIST_1D_START_2x2    = 0,
+    SCALING_LIST_1D_START_4x4    = 2,
+    SCALING_LIST_1D_START_8x8    = 8,
+    SCALING_LIST_1D_START_16x16  = 14,
+    SCALING_LIST_1D_START_32x32  = 20,
+    SCALING_LIST_1D_START_64x64  = 26,
+};
 
 class Exception : public std::exception {
 public:
@@ -151,18 +163,30 @@ private:
     std::string m_str;
 };
 
+class RecoverableException : public Exception {
+public:
+    explicit RecoverableException( const std::string& _s ) : Exception( _s ) {}
+    virtual ~RecoverableException() noexcept = default;
+    CLASS_COPY_MOVE_DEFAULT( RecoverableException )
+
+    template<typename T>
+    inline RecoverableException& operator<<( const T& t ) { static_cast<Exception&>( *this ) << t; return *this; }
+};
+
 #define FMT_ERROR_LOCATION "In function \"" << __PRETTY_FUNCTION__ << "\" in " << __FILE__ ":" << __LINE__ << ": "
 
 #define WARN(msg)                    { std::cerr << "\nWARNING: " << FMT_ERROR_LOCATION << msg << std::endl;          }
 #define ABORT(msg)                   { std::cerr << "\nERROR: "   << FMT_ERROR_LOCATION << msg << std::endl; abort(); }
 
 #define THROW_FATAL(msg)             throw(Exception                  ("\nERROR: ") << FMT_ERROR_LOCATION << msg)
+#define THROW_RECOVERABLE( msg )     throw( RecoverableException       ( "\nERROR: " ) << FMT_ERROR_LOCATION << msg )
 
 #define LIKELY(expr) (__builtin_expect(!!(expr), 1))
 #define UNLIKELY(expr) (__builtin_expect(!!(expr), 0))
 
-#define CHECK_WARN(cond, msg)        { if UNLIKELY(cond) { WARN             (msg << "\nWARNING CONDITION: " << #cond); } }
-#define CHECK_FATAL(cond, msg)       { if UNLIKELY(cond) { THROW_FATAL      (msg << "\nERROR CONDITION: "   << #cond); } }
+#define CHECK_WARN(cond, msg)        { if UNLIKELY(cond)   { WARN             (msg << "\nWARNING CONDITION: " << #cond); } }
+#define CHECK_FATAL(cond, msg)       { if UNLIKELY(cond)   { THROW_FATAL      (msg << "\nERROR CONDITION: "   << #cond); } }
+#define CHECK( cond, msg )           { if UNLIKELY( cond ) { THROW_RECOVERABLE( msg << "\nERROR CONDITION: "   << #cond ); } }
 
 #if defined(NDEBUG)
 #  define CHECKD(cond, msg)          { if UNLIKELY( cond ) { ABORT            ( msg << "\nERROR CONDITION: "   << #cond ); } }

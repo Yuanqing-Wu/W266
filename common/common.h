@@ -20,8 +20,8 @@ struct Position {
     constexpr Position offset(const Position pos)                   const { return Position(x + pos.x, y + pos.y); }
     constexpr Position offset(const PosType _x, const PosType _y)   const { return Position(x + _x   , y + _y   ); }
 
-    void reposition_to(const Position new_pos)   { x = new_pos.x; y = new_pos.y; }
-    void relative_to  (const Position origin)    { x -= origin.x; y -= origin.y; }
+    void repositionTo(const Position new_pos)   { x = new_pos.x; y = new_pos.y; }
+    void relativeTo  (const Position origin)    { x -= origin.x; y -= origin.y; }
 
     constexpr Position operator-( const Position &other )   const { return{ x - other.x, y - other.y }; }
 };
@@ -38,7 +38,7 @@ struct Size {
     constexpr bool operator==(const Size &other)    const { return (width == other.width) && (height == other.height); }
     constexpr uint32_t area()                       const { return (uint32_t) width * (uint32_t) height; }
 
-    const ComponentID comp_id()  const { return ComponentID( _comp_id ); }
+    const ComponentID compId()  const { return ComponentID( _comp_id ); }
 };
 
 struct Area : public Position, public Size {
@@ -52,10 +52,10 @@ struct Area : public Position, public Size {
     Size& size() { return *this; }
     constexpr const Size& size()                        const { return *this; }
 
-    constexpr const Position& top_left()                 const { return *this; }
-    constexpr Position top_right()                       const { return { (PosType) (x + width - 1), y }; }
-    constexpr Position bottom_left()                     const { return { x, (PosType) (y + height - 1) }; }
-    constexpr Position bottom_right()                    const { return { (PosType) (x + width - 1), (PosType) (y + height - 1) }; }
+    constexpr const Position& topTeft()                 const { return *this; }
+    constexpr Position topRight()                       const { return { (PosType) (x + width - 1), y }; }
+    constexpr Position bottomLeft()                     const { return { x, (PosType) (y + height - 1) }; }
+    constexpr Position bottomRight()                    const { return { (PosType) (x + width - 1), (PosType) (y + height - 1) }; }
     constexpr Position center()                         const { return { (PosType) (x + width / 2), (PosType) (y + height / 2) }; }
 
     constexpr bool contains(const Position &_pos)       const { return (_pos.x >= x) && (_pos.x < (x + width)) && (_pos.y >= y) && (_pos.y < (y + height)); }
@@ -65,6 +65,6 @@ struct Area : public Position, public Size {
     constexpr bool operator==(const Area &other)        const { return (Size::operator==(other)) && (Position::operator==(other)); }
 };
 
-constexpr static inline ptrdiff_t rs_addr(const Position &pos, const ptrdiff_t stride) {
+constexpr static inline ptrdiff_t rsAddr(const Position &pos, const ptrdiff_t stride) {
     return stride * (ptrdiff_t)pos.y + (ptrdiff_t)pos.x;
 }

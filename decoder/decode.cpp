@@ -1,37 +1,37 @@
 #include "decode.h"
 
-void access_unit_default(AccessUnit *access_unit ) {
-    if(nullptr == access_unit) {
+void accessUnitDefault(AccessUnit *accessUnit) {
+    if(nullptr == accessUnit) {
         return;
     }
 
-    access_unit->payload = NULL; 
-    access_unit->payload_size = 0;
-    access_unit->payload_used_size = 0;
-    access_unit->cts = 0;
-    access_unit->dts = 0;
-    access_unit->cts_valid = false;
-    access_unit->dts_valid = false;
-    access_unit->rap = false;
+    accessUnit->payload = NULL; 
+    accessUnit->payloadSize = 0;
+    accessUnit->payloadUsedSize = 0;
+    accessUnit->cts = 0;
+    accessUnit->dts = 0;
+    accessUnit->ctsValid = false;
+    accessUnit->dtsValid = false;
+    accessUnit->rap = false;
 }
 
-AccessUnit* access_unit_alloc() {
-    AccessUnit* access_unit = (AccessUnit*)malloc(sizeof(AccessUnit));
-    if(nullptr == access_unit) {
+AccessUnit* accessUnitAlloc() {
+    AccessUnit* accessUnit = (AccessUnit*)malloc(sizeof(AccessUnit));
+    if(nullptr == accessUnit) {
         return nullptr;
     }
-    access_unit_default(access_unit);
-    return access_unit;
+    accessUnitDefault(accessUnit);
+    return accessUnit;
 }
 
-void access_unit_alloc_payload(AccessUnit *access_unit, int payload_size) {
-    access_unit->payload = (unsigned char*)malloc(sizeof(unsigned char) * payload_size);
-    if(nullptr == access_unit->payload) {
+void accessUnitAllocPayload(AccessUnit *accessUnit, int payloadSize) {
+    accessUnit->payload = (unsigned char*)malloc(sizeof(unsigned char) * payloadSize);
+    if(nullptr == accessUnit->payload) {
         return;
     }
-    access_unit->payload_size = payload_size;
+    accessUnit->payloadSize = payloadSize;
 }
 
-Decoder* decoder_open() {
+Decoder* decoderOpen() {
 
 }

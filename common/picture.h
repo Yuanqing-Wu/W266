@@ -15,10 +15,10 @@ public:
     int         poc                 = 0;
     uint64_t    cts                 = 0;   // composition time stamp
     uint64_t    dts                 = 0;   // decoding time stamp
-    uint32_t    temp_layer          = std::numeric_limits<uint32_t>::max();
+    uint32_t    tempLayer          = std::numeric_limits<uint32_t>::max();
     uint32_t    depth               = 0;
-    int         layer_id            = NOT_VALID;
-    NalUnitType nal_unit_type       = NAL_UNIT_INVALID;
+    int         layerId            = NOT_VALID;
+    NalUnitType nalUnitType       = NAL_UNIT_INVALID;
     uint32_t    bits                = 0;   // input nal bit count
     bool        rap                 = 0;   // random access point flag
     int         decodingOrderNumber = 0;
