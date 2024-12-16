@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cstring>
+
 #include "def.h"
 #include "common.h"
-#include "unit.h"
 
 #define INCX(ptr, stride) { ptr++; }
 #define INCY(ptr, stride) { ptr += (stride); }
@@ -120,6 +121,8 @@ typedef AreaBuf<const TCoeff> CCoeffBuf;
 typedef AreaBuf<TCoeffSig>        CoeffSigBuf;
 typedef AreaBuf<const TCoeffSig> CCoeffSigBuf;
 
+struct UnitArea;
+struct CompArea;
 
 template<typename T>
 struct UnitBuf {

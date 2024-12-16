@@ -5,6 +5,10 @@
 #include "unit.h"
 #include "buffer.h"
 
+struct UnitArea;
+struct PelStorage;
+class CodingStructure;
+class Slice;
 struct Picture : public UnitArea {
     Picture() = default;
     ~Picture() = default;
@@ -26,4 +30,7 @@ public:
     PelStorage     m_bufs;
 
     uint32_t       margin      = 0;
+
+    CodingStructure*    cs = nullptr;
+    std::vector<Slice*> slices;
 };

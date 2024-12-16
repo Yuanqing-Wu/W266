@@ -1,5 +1,7 @@
 #include "buffer.h"
 
+#include "unit.h"
+
 template<typename T>
 void AreaBuf<T>::fill(const T &val) {
     if(T(0) == val) {
@@ -465,7 +467,7 @@ const CPelBuf PelStorage::getBuf(const ComponentID compId) const {
 PelBuf PelStorage::getBuf(const CompArea &blk) {
     const PelBuf& r = bufs[blk.compId()];
 
-    CHECKD(rsAddr(blk.bottom_right(), r.stride) >= ((r.height - 1) * r.stride + r.width), "Trying to access a buf outside of bound!");
+    CHECKD(rsAddr(blk.bottomRight(), r.stride) >= ((r.height - 1) * r.stride + r.width), "Trying to access a buf outside of bound!");
 
     return PelBuf(r.buf + rsAddr(blk, r.stride), r.stride, blk);
 }

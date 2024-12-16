@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string>
+#include <sstream>
+#include <iostream>
 
 typedef       int16_t         Pel;               ///< pixel type
 typedef       int             TCoeff;            ///< transform coefficient
@@ -16,6 +18,25 @@ struct ClpRngTemplate {
     T min() const { return 0; }
     T max() const { return ((1 << bd) - 1);}
     int bd;
+};
+
+enum TreeType : uint8_t {
+    TREE_D = 0, //default tree status (for single-tree slice, TREE_D means joint tree; for dual-tree I slice, TREE_D means TREE_L for luma and TREE_C for chroma)
+    TREE_L = 1, //separate tree only contains luma (may split)
+    TREE_C = 2, //separate tree only contains chroma (not split), to avoid small chroma block
+};
+
+enum ModeType : uint8_t {
+    MODE_TYPE_ALL = 0, //all modes can try
+    MODE_TYPE_INTER = 1, //can try inter
+    MODE_TYPE_INTRA = 2, //can try intra, ibc, palette
+};
+
+enum PredMode : uint8_t {
+    MODE_INTER                 = 0,     ///< inter-prediction mode
+    MODE_INTRA                 = 1,     ///< intra-prediction mode
+    MODE_IBC                   = 2,     ///< ibc-prediction mode
+    NUMBER_OF_PREDICTION_MODES
 };
 
 typedef ClpRngTemplate<Pel> ClpRng;
@@ -34,20 +55,16 @@ static const int MAX_NUM_LONG_TERM_REF_PICS =                      33;
 
 static const int MAX_TLAYER =                                       7; ///< Explicit temporal layer QP offset - max number of temporal layer
 
-#define MEMORY_ALIGN_DEF_SIZE       32  // for use with avx2 (256 bit)
+static const int MAX_LADF_INTERVALS       =                         5; /// max number of luma adaptive deblocking filter qp offset intervals
 
-#define xMalloc(type, len) detail::aligned_malloc<type>(len, MEMORY_ALIGN_DEF_SIZE)
+static const int MAX_CU_DEPTH =                                     7; ///< log2(CTUSize)
+static const int MAX_CU_SIZE =                        1<<MAX_CU_DEPTH;
+static const int MIN_CU_LOG2 =                                      2;
+static const int MIN_PU_SIZE =                                      4;
+static const int MIN_TU_SIZE =                                      4;
+static const int MAX_LOG2_TU_SIZE_PLUS_ONE =                        7; ///< log2(MAX_TU_SIZE) + 1
 
-namespace detail {
-    template<typename T>
-    static inline T* aligned_malloc(size_t len, size_t alignement) {
-        T* p = NULL;
-        if(posix_memalign((void**) &p, alignement, sizeof(T) * (len))) {
-        THROW_FATAL("posix_memalign failed");
-        }
-        return p;
-    }
-}   // namespace detail
+typedef       uint16_t        SplitSeries;       ///< used to encoded the splits that caused a particular CU size
 
 #define CLASS_COPY_MOVE_DEFAULT(Class)        \
     Class(const Class&)            = default; \
@@ -60,6 +77,13 @@ namespace detail {
     Class(Class&&)                 = delete; \
     Class& operator=(const Class&) = delete; \
     Class& operator=(Class&&)      = delete;
+
+enum SliceType {
+    B_SLICE               = 0,
+    P_SLICE               = 1,
+    I_SLICE               = 2,
+    NUMBER_OF_SLICE_TYPES
+};
 
 enum ChromaFormat : uint8_t {
     CHROMA_400        = 0,
@@ -82,6 +106,13 @@ enum ComponentID : uint8_t {
     MAX_NUM_COMPONENT,
     JOINT_CbCr          = MAX_NUM_COMPONENT,
     MAX_NUM_TBLOCKS     = MAX_NUM_COMPONENT
+};
+
+enum RefPicList : uint8_t {
+  REF_PIC_LIST_0               = 0,   ///< reference list 0
+  REF_PIC_LIST_1               = 1,   ///< reference list 1
+  NUM_REF_PIC_LIST_01          = 2,
+  REF_PIC_LIST_X               = 100  ///< special mark
 };
 
 enum NalUnitType {
@@ -187,12 +218,23 @@ public:
 #define CHECK_WARN(cond, msg)        { if UNLIKELY(cond)   { WARN             (msg << "\nWARNING CONDITION: " << #cond); } }
 #define CHECK_FATAL(cond, msg)       { if UNLIKELY(cond)   { THROW_FATAL      (msg << "\nERROR CONDITION: "   << #cond); } }
 #define CHECK( cond, msg )           { if UNLIKELY( cond ) { THROW_RECOVERABLE( msg << "\nERROR CONDITION: "   << #cond ); } }
+#define CHECKD(cond, msg)            { if UNLIKELY( cond ) { ABORT            ( msg << "\nERROR CONDITION: "   << #cond ); } }
 
-#if defined(NDEBUG)
-#  define CHECKD(cond, msg)          { if UNLIKELY( cond ) { ABORT            ( msg << "\nERROR CONDITION: "   << #cond ); } }
-#else
-#  define CHECKD(cond, msg)
-#endif   // _DEBUG
+
+#define MEMORY_ALIGN_DEF_SIZE       32  // for use with avx2 (256 bit)
+
+#define xMalloc(type, len) detail::aligned_malloc<type>(len, MEMORY_ALIGN_DEF_SIZE)
+
+namespace detail {
+    template<typename T>
+    static inline T* aligned_malloc(size_t len, size_t alignement) {
+        T* p = NULL;
+        if(posix_memalign((void**) &p, alignement, sizeof(T) * (len))) {
+        THROW_FATAL("posix_memalign failed");
+        }
+        return p;
+    }
+}   // namespace detail
 
 template<typename T, size_t N>
 class static_vector {

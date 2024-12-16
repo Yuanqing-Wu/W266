@@ -76,15 +76,15 @@ void ReferencePictureList::setInterLayerRefPicIdx(int idx, int layerIdc) {
 }
 
 bool ReferencePictureList::findInRefPicList(const Picture* checkRefPic, int currPicPoc, int layerId) const {
-
+    return 0;
 }
 
 int ReferencePictureList::calcLTRefPOC(int currPoc, int bitsForPoc, int refPicIdentifier, bool pocMSBPresent, int deltaPocMSBCycle) {
-
+    return 0;
 }
 
 int ReferencePictureList::calcLTRefPOC(int currPoc, int bitsForPoc, int refPicIdx) const {
-
+    return 0;
 }
 
 ScalingList::ScalingList() {
@@ -92,4 +92,5 @@ ScalingList::ScalingList() {
 }
 
 void ScalingList::reset() {
+    
 }

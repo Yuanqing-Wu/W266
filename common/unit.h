@@ -112,3 +112,67 @@ struct UnitArea {
 
     bool valid() const { return chromaFormat != NUM_CHROMA_FORMAT && blocks.size() > 0; }
 };
+
+class  CodingStructure;
+class  Slice;
+struct CodingUnit;
+class SPS;
+class PPS;
+struct TransformUnit : public UnitArea {
+    CodingUnit     *cu;
+    TransformUnit  *next;
+    unsigned        idx;
+
+    uint8_t         maxScanPosX  [MAX_NUM_TBLOCKS];
+    uint8_t         maxScanPosY  [MAX_NUM_TBLOCKS];
+    int8_t          chromaQp     [2];
+
+    uint8_t         _chType    : 2;
+    uint8_t         jointCbCr  : 2;
+    uint8_t         cbf        : 3;
+    uint8_t         _mtsIdxL   : 3;
+    uint8_t         _mtsIdxU   : 1;
+    uint8_t         _mtsIdxV   : 1;
+
+    ChannelType     chType()                const { return ChannelType( _chType ); }
+    void            setChType( ChannelType ch )   { _chType = ch; }
+    uint8_t         mtsIdx   ( int c )      const { return !c ? _mtsIdxL :             c == 1 ? _mtsIdxU :         _mtsIdxV; }
+    void            setMtsIdx( int c, uint8_t v ) { if   ( !c ) _mtsIdxL = v; else if( c == 1 ) _mtsIdxU = v; else _mtsIdxV = v; }
+};
+struct CodingUnit : public UnitArea {
+    TransformUnit     firstTU;
+    TransformUnit    *lastTU;
+
+    struct CtuData   *ctuData;
+    CodingStructure  *cs;
+    const Slice      *slice;
+    const PPS        *pps;
+    const SPS        *sps;
+            CodingUnit *next;
+    const CodingUnit *above;
+    const CodingUnit *left;
+    ptrdiff_t         predBufOff;
+    uint32_t          idx;
+
+    int8_t            intraDir [MAX_NUM_CHANNEL_TYPE];
+
+    SplitSeries       splitSeries;
+
+    int8_t            chromaQpAdj;
+    int8_t            qp;
+    uint8_t           _mergeType      : 2;
+    uint8_t           qtDepth         : 3;
+    uint8_t           depth           : 4;
+    uint8_t           _chType         : 1;
+
+    bool              _rootCbf        : 1;
+    uint8_t           _treeType       : 2;
+    uint8_t           _modeType       : 2;
+
+    uint8_t           _predMode       : 2;
+
+    uint8_t           _multiRefIdx    : 2;
+    bool              planeCbfY       : 1;
+    bool              planeCbfU       : 1;
+    bool              planeCbfV       : 1;
+};

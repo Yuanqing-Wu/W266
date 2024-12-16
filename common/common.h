@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <cmath>
 
 #include "def.h"
 
@@ -67,4 +68,14 @@ struct Area : public Position, public Size {
 
 constexpr static inline ptrdiff_t rsAddr(const Position &pos, const ptrdiff_t stride) {
     return stride * (ptrdiff_t)pos.y + (ptrdiff_t)pos.x;
+}
+
+extern int8_t g_aucLog2[MAX_CU_SIZE + 1];
+static inline int getLog2( int val ) {
+    CHECKD( g_aucLog2[2] != 1, "g_aucLog2[] has not been initialized yet." );
+    if( val > 0 && val < (int) sizeof( g_aucLog2 ) )
+    {
+        return g_aucLog2[val];
+    }
+    return std::log2( val );
 }

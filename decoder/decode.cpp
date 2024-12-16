@@ -32,6 +32,6 @@ void accessUnitAllocPayload(AccessUnit *accessUnit, int payloadSize) {
     accessUnit->payloadSize = payloadSize;
 }
 
-Decoder* decoderOpen() {
+void decoderOpen() {
 
 }

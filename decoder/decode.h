@@ -5,6 +5,8 @@
 #include <memory>
 #include <map>
 
+#include "picture.h"
+
 #define MAX_CODED_PICTURE_SIZE  800000
 
 typedef struct Decoder Decoder;
@@ -34,13 +36,6 @@ typedef struct AccessUnit {
     bool dtsValid;
     bool rap;
 } AccessUnit;
-
-typedef enum {
-    CT_Y = 0,                      // Y component
-    CT_U = 1,                      // U component
-    CT_V = 2,                      // V component
-    MAX_NUM_COMPONENT = 3
-} ComponentType;
 
 typedef struct Plane {
     unsigned char *ptr;
@@ -92,13 +87,6 @@ typedef enum {
     VVC_NAL_UNIT_UNSPECIFIED_31,
     VVC_NAL_UNIT_INVALID
 } NalType;
-
-typedef enum {
-    SLICETYPE_I = 0,
-    SLICETYPE_P,
-    SLICETYPE_B,
-    SLICETYPE_UNKNOWN
-} SliceType;
 
 typedef struct PicAttributes {
     NalType nalType;
@@ -164,26 +152,23 @@ public:
         }
 
         bool isAllocated() {return !!m_ptr;}
-        bool isExternAllocator() {return m_is_extern_allocator;}
-        void setExternAllocator() {m_is_extern_allocator = true;}
 
     private:
         std::unique_ptr<unsigned char[]> m_ptr = nullptr;   // pointer to plane buffer
         size_t m_size = 0;
-        bool m_is_extern_allocator = false;
     };
 
 public:
 
-    int init();
-    int uninit();
-    int reset();
+    // int init();
+    // int uninit();
+    // int reset();
 
 private:
-    // typedef std::tuple<Frame, Picture*> frame_list_entry;
-    // typedef std::map<uint64_t, FrameStorage> frame_storage_map;
-    // typedef frame_storage_map::value_type frame_storage_map_type;
+    typedef std::tuple<Frame, Picture*> FrameListEntry;
+    typedef std::map<uint64_t, FrameStorage> FrameStorageMap;
+    typedef FrameStorageMap::value_type      FrameStorageMapType;
 };
 
-// AccessUnit* access_unit_alloc();
-// void access_unit_alloc_payload(AccessUnit *access_unit, int payload_size);
+AccessUnit* accessUnitAlloc();
+void accessUnitAllocPayload(AccessUnit *accessUnit, int payloadSize);
