@@ -11,11 +11,7 @@
             "program": "${workspaceFolder}/build/debug/enc",
             "args": [
             ],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb",
             "preLaunchTask": "debug"
         },
         {
@@ -26,11 +22,7 @@
             "args": [
                 "-b", "${workspaceFolder}/test/bs.266"
             ],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
             "preLaunchTask": "debug"
         },
     ]

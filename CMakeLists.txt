@@ -4,4 +4,24 @@ project(W266 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(dec app/dec.cpp)
+set(COMMON_DIR ${CMAKE_SOURCE_DIR}/common)
+set(DECODER_DIR ${CMAKE_SOURCE_DIR}/decoder)
+
+file(GLOB APP_SOURCES ${APP_DIR}/*.cpp)
+file(GLOB COMMON_SOURCES ${COMMON_DIR}/*.cpp)
+file(GLOB DECODER_SOURCES ${DECODER_DIR}/*.cpp)
+
+file(GLOB APP_HEADERS ${APP_DIR}/*.h)
+file(GLOB COMMON_HEADERS ${COMMON_DIR}/*.h)
+file(GLOB DECODER_HEADERS ${DECODER_DIR}/*.h)
+
+include_directories(${APP_DIR} ${COMMON_DIR} ${DECODER_DIR})
+
+add_executable(dec app/dec.cpp
+    ${APP_SOURCES}
+    ${COMMON_SOURCES}
+    ${DECODER_SOURCES}
+    ${APP_HEADERS}
+    ${COMMON_HEADERS}
+    ${DECODER_HEADERS}
+)

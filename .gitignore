@@ -2,3 +2,4 @@ build/debug/*
 build/release/*
 !build/release/build.sh
 !build/debug/build.sh
+.vscode/settings.json
