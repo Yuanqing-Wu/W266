@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "rom.h"
+#include "Rom.h"
 
 int8_t                    g_aucLog2    [MAX_CU_SIZE + 1];
 

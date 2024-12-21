@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <cmath>
 
-#include "def.h"
+#include "Def.h"
 
 typedef int32_t PosType;
 typedef uint32_t SizeType;

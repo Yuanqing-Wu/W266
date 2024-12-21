@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "../decoder/decode.h"
+#include "Decoder/Decode.h"
 
 int main(int argc, char* argv[]) {
     std::string bsFilePath = std::string(argv[2]);

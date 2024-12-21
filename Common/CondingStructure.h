@@ -2,9 +2,14 @@
 
 #include <memory>
 
-#include "unit.h"
-#include "picture.h"
-#include "slice.h"
+#include "Unit.h"
+#include "Buffer.h"
+
+typedef struct Picture Picture;
+class Slice;
+class PPS;
+class SPS;
+class PicHeader;
 
 struct CtuData {
   // SAOBlkParam           saoParam;

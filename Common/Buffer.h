@@ -2,8 +2,8 @@
 
 #include <cstring>
 
-#include "def.h"
-#include "common.h"
+#include "Def.h"
+#include "Common.h"
 
 #define INCX(ptr, stride) { ptr++; }
 #define INCY(ptr, stride) { ptr += (stride); }

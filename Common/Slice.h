@@ -4,14 +4,13 @@
 #include <vector>
 #include <array>
 
-#include "def.h"
-#include "picture.h"
-#include "rom.h"
+#include "Def.h"
+#include "Rom.h"
 
 using PartitionConstraints = std::array<unsigned, 3>;
 
+typedef struct Picture Picture;
 
-struct Picture;
 template<class T>
 struct BasePS: public std::enable_shared_from_this<T> {
     std::shared_ptr<T> getSharedPtr() {

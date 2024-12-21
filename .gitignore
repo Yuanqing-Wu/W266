@@ -1,5 +1,5 @@
-build/debug/*
-build/release/*
-!build/release/build.sh
-!build/debug/build.sh
+Build/Debug/*
+Build/Release/*
+!Build/Release/build.sh
+!Build/Debug/build.sh
 .vscode/settings.json

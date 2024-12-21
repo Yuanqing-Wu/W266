@@ -1,4 +1,15 @@
-#include "decode.h"
+#include "Decode.h"
+#include "Common/Rom.h"
+#include "Common/Picture.h"
+
+DecImpl::DecImpl() = default;
+DecImpl::~DecImpl() = default;
+
+int DecImpl::init() {
+    initROM();
+    
+    return 0;
+}
 
 void accessUnitDefault(AccessUnit *accessUnit) {
     if(nullptr == accessUnit) {
@@ -32,6 +43,17 @@ void accessUnitAllocPayload(AccessUnit *accessUnit, int payloadSize) {
     accessUnit->payloadSize = payloadSize;
 }
 
-void decoderOpen() {
-
+Decoder* decoderOpen() {
+    DecImpl* decCtx = new DecImpl();
+    if (!decCtx) {
+        std::cerr << "W266 [error]: cannot allocate memory for W266 decoder" << std::endl;
+        return nullptr;
+    }
+    int ret = decCtx->init();
+    if (ret != 0) {
+        delete decCtx;
+        std::cerr << "W266 [error]: cannot init the W266 decoder" << std::endl;
+        return nullptr;
+    }
+    return nullptr;
 }

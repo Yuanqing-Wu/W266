@@ -5,11 +5,12 @@
 #include <memory>
 #include <map>
 
-#include "picture.h"
+#include "Common/Def.h"
 
 #define MAX_CODED_PICTURE_SIZE  800000
 
 typedef struct Decoder Decoder;
+typedef struct Picture Picture;
 
 typedef enum {
   W266_OK                    = 0,
@@ -160,7 +161,7 @@ public:
 
 public:
 
-    // int init();
+    int init();
     // int uninit();
     // int reset();
 

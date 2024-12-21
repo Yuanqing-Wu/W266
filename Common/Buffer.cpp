@@ -1,6 +1,5 @@
-#include "buffer.h"
-
-#include "unit.h"
+#include "Buffer.h"
+#include "Unit.h"
 
 template<typename T>
 void AreaBuf<T>::fill(const T &val) {

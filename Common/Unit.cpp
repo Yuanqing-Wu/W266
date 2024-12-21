@@ -1,4 +1,4 @@
-#include "unit.h"
+#include "Unit.h"
 
 Position CompArea::chromaPos(const ChromaFormat chromaFormat) const {
     if (isLuma(compId())) {

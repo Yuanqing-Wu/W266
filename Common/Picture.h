@@ -2,13 +2,12 @@
 
 #include <limits>
 
-#include "unit.h"
-#include "buffer.h"
+#include "Unit.h"
+#include "Buffer.h"
 
-struct UnitArea;
-struct PelStorage;
 class CodingStructure;
 class Slice;
+
 struct Picture : public UnitArea {
     Picture() = default;
     ~Picture() = default;

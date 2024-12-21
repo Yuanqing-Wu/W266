@@ -1,6 +1,7 @@
 #include <cstring>
 
-#include "slice.h"
+#include "Slice.h"
+#include "Picture.h"
 
 ReferencePictureList::ReferencePictureList() {
     ::memset(this, 0, sizeof(*this));

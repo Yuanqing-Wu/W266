@@ -2,12 +2,12 @@
 
 #include <vector>
 
-#include "def.h"
-#include "common.h"
+#include "Def.h"
+#include "Common.h"
 
+typedef struct CodingUnit CodingUnit;
 class  CodingStructure;
 class  Slice;
-struct CodingUnit;
 class SPS;
 class PPS;
 
@@ -101,14 +101,11 @@ struct UnitArea {
 
     const Position& lumaPos () const { return Y(); }
     const Size&     lumaSize() const { return Y(); }
-    const Area&     luma_area() const { return Y(); }
+    const Area&     lumaArea() const { return Y(); }
 
     const Position& chromaPos () const { return Cb(); }
     const Size&     chromaSize() const { return Cb(); }
     const Area&     chromaArea() const { return Cb(); }
-
-    const UnitArea  singleComp(const ComponentID compID) const;
-    const UnitArea  singleChan(const ChannelType chType) const;
 
     SizeType  lwidth()  const { return Y().width; }  /*! luma width  */
     SizeType  lheight() const { return Y().height; } /*! luma height */
