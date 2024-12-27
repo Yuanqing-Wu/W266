@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <limits>
 
 typedef       int16_t         Pel;               ///< pixel type
 typedef       int             TCoeff;            ///< transform coefficient
@@ -12,6 +13,12 @@ typedef       int16_t         TCoeffSig;
 typedef       int16_t         TMatrixCoeff;      ///< transform matrix coefficient
 typedef       int16_t         TFilterCoeff;      ///< filter coefficient
 typedef       int             Intermediate_Int;  ///< used as intermediate value in calculations
+
+static const uint64_t MAX_UINT64 = std::numeric_limits<uint64_t>::max();
+static const uint32_t MAX_UINT   = std::numeric_limits<uint32_t>::max();
+static const int      MAX_INT    = std::numeric_limits<int>     ::max();
+static const uint8_t  MAX_UCHAR  = std::numeric_limits<int8_t>  ::max();
+static const uint8_t  MAX_SCHAR  = std::numeric_limits<uint8_t> ::max();
 
 template<typename T>
 struct ClpRngTemplate {
