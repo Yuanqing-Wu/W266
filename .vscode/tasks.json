@@ -6,7 +6,7 @@
             "command": "ninja",
             // "args": ["-j", "8"],
             "options": {
-                "cwd": "${workspaceFolder}/build/debug"
+                "cwd": "${workspaceFolder}/Build/Debug"
             },
             "problemMatcher": ["$gcc"],
             "group": {
@@ -21,7 +21,7 @@
             "command": "ninja",
             //"args": ["-j", "8"],
             "options": {
-                "cwd": "{workspaceFolder}/build/release"
+                "cwd": "{workspaceFolder}/Build/Release"
             },
             "problemMatcher": ["$gcc"],
             "group": {

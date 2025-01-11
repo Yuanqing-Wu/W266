@@ -15,9 +15,9 @@ inline Position recalcPosition(const ChromaFormat _cf, const ComponentID srcCid,
     if(toChannelType(srcCid) == toChannelType(dstCid)) {
         return pos;
     } else if (isLuma(srcCid) && isChroma(dstCid)) {
-        return Position(pos.x >> getCompScaleX(dstCid, _cf), pos.y >> getCompScaleY(dstCid, _cf));
+        return Position(pos.x >> getComponentScaleX(dstCid, _cf), pos.y >> getComponentScaleY(dstCid, _cf));
     } else {
-        return Position(pos.x << getCompScaleX(srcCid, _cf), pos.y << getCompScaleY(srcCid, _cf));
+        return Position(pos.x << getComponentScaleX(srcCid, _cf), pos.y << getComponentScaleY(srcCid, _cf));
     }
 }
 

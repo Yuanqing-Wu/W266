@@ -6,6 +6,7 @@
 #include <map>
 
 #include "Common/Def.h"
+#include "DecLib.h"
 
 #define MAX_CODED_PICTURE_SIZE  800000
 
@@ -164,12 +165,28 @@ public:
     int init();
     // int uninit();
     // int reset();
+    static NalType getNalUnitType       (AccessUnit& accessUnit);
+    int decode( AccessUnit& accessUnit, Frame** ppframe );
+
 
 private:
     typedef std::tuple<Frame, Picture*> FrameListEntry;
     typedef std::map<uint64_t, FrameStorage> FrameStorageMap;
     typedef FrameStorageMap::value_type      FrameStorageMapType;
+
+    std::unique_ptr<DecLib>                  m_cDecLib;
+
+    static int xRetrieveNalStartCode ( unsigned char *pB, int iZerosInStartcode );
+
+    static int xConvertPayloadToRBSP ( const uint8_t* payload, size_t payloadLen, InputBitstream* bitstream, bool isVclNalUnit );
+    static int xReadNalUnitHeader    ( InputNALUnit& nalu );
 };
 
 AccessUnit* accessUnitAlloc();
 void accessUnitAllocPayload(AccessUnit *accessUnit, int payloadSize);
+Decoder* decoderOpen();
+NalType getNalUnitType(AccessUnit *accessUnit);
+int decode(Decoder *dec, AccessUnit* accessUnit, Frame** frame);
+bool handleFrame();
+int decoderClose();
+void accessUnitFree();

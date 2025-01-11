@@ -5,6 +5,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <limits>
+#include <vector>
 
 typedef       int16_t         Pel;               ///< pixel type
 typedef       int             TCoeff;            ///< transform coefficient
@@ -12,6 +14,12 @@ typedef       int16_t         TCoeffSig;
 typedef       int16_t         TMatrixCoeff;      ///< transform matrix coefficient
 typedef       int16_t         TFilterCoeff;      ///< filter coefficient
 typedef       int             Intermediate_Int;  ///< used as intermediate value in calculations
+
+static const uint64_t MAX_UINT64 = std::numeric_limits<uint64_t>::max();
+static const uint32_t MAX_UINT   = std::numeric_limits<uint32_t>::max();
+static const int      MAX_INT    = std::numeric_limits<int>     ::max();
+static const uint8_t  MAX_UCHAR  = std::numeric_limits<int8_t>  ::max();
+static const uint8_t  MAX_SCHAR  = std::numeric_limits<uint8_t> ::max();
 
 template<typename T>
 struct ClpRngTemplate {
@@ -49,6 +57,8 @@ static const int MAX_NUM_REF_PICS =                                16; ///< max.
 static const int MAX_NUM_REF =                                     16; ///< max. number of entries in picture reference list
 static const int MAX_QP =                                          63;
 static const int NOT_VALID =                                       -1;
+
+static const int MRG_MAX_NUM_CANDS =                                6; ///< MERGE
 
 static const int MAX_NUM_SUB_PICS =                               255;
 static const int MAX_NUM_LONG_TERM_REF_PICS =                      33;
@@ -157,20 +167,6 @@ enum NalUnitType {
     NAL_UNIT_INVALID
 };
 
-static inline ChannelType toChannelType             (const ComponentID id)                         { return (id==COMPONENT_Y) ? CHANNEL_TYPE_LUMA : CHANNEL_TYPE_CHROMA; }
-static inline bool        isLuma                    (const ComponentID id)                         { return (id==COMPONENT_Y);                                           }
-static inline bool        isLuma                    (const ChannelType id)                         { return (id==CHANNEL_TYPE_LUMA);                                     }
-static inline bool        isChroma                  (const ComponentID id)                         { return (id!=COMPONENT_Y);                                           }
-static inline bool        isChroma                  (const ChannelType id)                         { return (id!=CHANNEL_TYPE_LUMA);                                     }
-static inline uint32_t    getChannalTypeScaleX      (const ChannelType id, const ChromaFormat fmt) { return (isLuma(id) || (fmt==CHROMA_444)) ? 0 : 1;                  }
-static inline uint32_t    getChannalTypeScaleY      (const ChannelType id, const ChromaFormat fmt) { return (isLuma(id) || (fmt!=CHROMA_420)) ? 0 : 1;                  }
-static inline uint32_t    getCompScaleX             (const ComponentID id, const ChromaFormat fmt) { return getChannalTypeScaleX(toChannelType(id), fmt);          }
-static inline uint32_t    getCompScaleY             (const ComponentID id, const ChromaFormat fmt) { return getChannalTypeScaleY(toChannelType(id), fmt);          }
-static inline uint32_t    getNumberValidComps       (const ChromaFormat fmt)                       { return (fmt==CHROMA_400) ? 1 : MAX_NUM_COMPONENT;                   }
-static inline uint32_t    getNumberValidChannels    (const ChromaFormat fmt)                       { return (fmt==CHROMA_400) ? 1 : MAX_NUM_CHANNEL_TYPE;                }
-static inline bool        isChromaEnabled           (const ChromaFormat fmt)                       { return !(fmt==CHROMA_400);                                          }
-static inline ComponentID getFirstCompOfChannel     (const ChannelType id)                         { return (isLuma(id) ? COMPONENT_Y : COMPONENT_Cb);                  }
-
 enum ScalingList1dStartIdx {
     SCALING_LIST_1D_START_2x2    = 0,
     SCALING_LIST_1D_START_4x4    = 2,
@@ -179,6 +175,21 @@ enum ScalingList1dStartIdx {
     SCALING_LIST_1D_START_32x32  = 20,
     SCALING_LIST_1D_START_64x64  = 26,
 };
+
+static inline ChannelType toChannelType             (const ComponentID id)                         { return (id==COMPONENT_Y)? CHANNEL_TYPE_LUMA : CHANNEL_TYPE_CHROMA; }
+static inline bool        isLuma                    (const ComponentID id)                         { return (id==COMPONENT_Y);                                          }
+static inline bool        isLuma                    (const ChannelType id)                         { return (id==CHANNEL_TYPE_LUMA);                                    }
+static inline bool        isChroma                  (const ComponentID id)                         { return (id!=COMPONENT_Y);                                          }
+static inline bool        isChroma                  (const ChannelType id)                         { return (id!=CHANNEL_TYPE_LUMA);                                    }
+static inline uint32_t    getChannelTypeScaleX      (const ChannelType id, const ChromaFormat fmt) { return (isLuma(id) || (fmt==CHROMA_444)) ? 0 : 1;                  }
+static inline uint32_t    getChannelTypeScaleY      (const ChannelType id, const ChromaFormat fmt) { return (isLuma(id) || (fmt!=CHROMA_420)) ? 0 : 1;                  }
+static inline uint32_t    getComponentScaleX        (const ComponentID id, const ChromaFormat fmt) { return getChannelTypeScaleX(toChannelType(id), fmt);               }
+static inline uint32_t    getComponentScaleY        (const ComponentID id, const ChromaFormat fmt) { return getChannelTypeScaleY(toChannelType(id), fmt);               }
+static inline uint32_t    getNumberValidComponents  (const ChromaFormat fmt)                       { return (fmt==CHROMA_400) ? 1 : MAX_NUM_COMPONENT;                  }
+static inline uint32_t    getNumberValidChannels    (const ChromaFormat fmt)                       { return (fmt==CHROMA_400) ? 1 : MAX_NUM_CHANNEL_TYPE;               }
+static inline bool        isChromaEnabled           (const ChromaFormat fmt)                       { return !(fmt==CHROMA_400);                                         }
+static inline ComponentID getFirstComponentOfChannel(const ChannelType id)                         { return (isLuma(id) ? COMPONENT_Y : COMPONENT_Cb);                  }
+
 
 class Exception : public std::exception {
 public:
@@ -235,6 +246,45 @@ namespace detail {
         return p;
     }
 }   // namespace detail
+
+template<class T>
+struct AlignedAllocator {
+    using value_type = T;
+
+    using propagate_on_container_move_assignment = std::true_type;
+    using is_always_equal                        = std::true_type;
+
+    AlignedAllocator()  = default;
+    ~AlignedAllocator() = default;
+    CLASS_COPY_MOVE_DEFAULT( AlignedAllocator )
+
+    template<class U>
+    constexpr AlignedAllocator( const AlignedAllocator<U>& ) noexcept {}
+
+    T* allocate( std::size_t n )
+    {
+        if( n > std::numeric_limits<std::size_t>::max() / sizeof( T ) )
+        {
+            throw std::bad_array_new_length();
+        }
+
+        if( T* p = xMalloc( T, n ) )
+        {
+            return p;
+        }
+
+        throw std::bad_alloc();
+    }
+
+    void deallocate( T* p, std::size_t ) noexcept { free( p ); }
+};
+template<typename T1, typename T2>
+static bool operator==( const AlignedAllocator<T1>&, const AlignedAllocator<T2>& ) noexcept { return true; }
+template<typename T1, typename T2>
+static bool operator!=( const AlignedAllocator<T1>&, const AlignedAllocator<T2>& ) noexcept { return false; }
+
+using AlignedByteVec = std::vector<uint8_t, AlignedAllocator<uint8_t>>;
+
 
 template<typename T, size_t N>
 class static_vector {

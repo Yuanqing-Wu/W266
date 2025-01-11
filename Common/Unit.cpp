@@ -2,8 +2,8 @@
 
 Position CompArea::chromaPos(const ChromaFormat chromaFormat) const {
     if (isLuma(compId())) {
-        uint32_t scaleX = getCompScaleX(compId(), chromaFormat);
-        uint32_t scaleY = getCompScaleY(compId(), chromaFormat);
+        uint32_t scaleX = getComponentScaleX(compId(), chromaFormat);
+        uint32_t scaleY = getComponentScaleY(compId(), chromaFormat);
 
         return Position(x >> scaleX, y >> scaleY);
     } else {
@@ -13,8 +13,8 @@ Position CompArea::chromaPos(const ChromaFormat chromaFormat) const {
 
 Size CompArea::lumaSize(const ChromaFormat chromaFormat) const {
     if(isChroma(compId())) {
-        uint32_t scaleX = getCompScaleX(compId(), chromaFormat);
-        uint32_t scaleY = getCompScaleY(compId(), chromaFormat);
+        uint32_t scaleX = getComponentScaleX(compId(), chromaFormat);
+        uint32_t scaleY = getComponentScaleY(compId(), chromaFormat);
         return Size( width << scaleX, height << scaleY );
     } else {
         return *this;
@@ -23,8 +23,8 @@ Size CompArea::lumaSize(const ChromaFormat chromaFormat) const {
 
 Size CompArea::chromaSize(const ChromaFormat chromaFormat) const {
     if(isLuma(compId())) {
-        uint32_t scaleX = getCompScaleX(compId(), chromaFormat);
-        uint32_t scaleY = getCompScaleY(compId(), chromaFormat);
+        uint32_t scaleX = getComponentScaleX(compId(), chromaFormat);
+        uint32_t scaleY = getComponentScaleY(compId(), chromaFormat);
         return Size(width >> scaleX, height >> scaleY);
     } else {
         return *this;
@@ -33,8 +33,8 @@ Size CompArea::chromaSize(const ChromaFormat chromaFormat) const {
 
 Position CompArea::lumaPos(const ChromaFormat chromaFormat) const {
     if(isChroma(compId())) {
-        uint32_t scaleX = getCompScaleX(compId(), chromaFormat);
-        uint32_t scaleY = getCompScaleY(compId(), chromaFormat);
+        uint32_t scaleX = getComponentScaleX(compId(), chromaFormat);
+        uint32_t scaleY = getComponentScaleY(compId(), chromaFormat);
         return Position(x << scaleX, y << scaleY);
     } else {
         return *this;

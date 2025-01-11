@@ -285,7 +285,7 @@ void UnitBuf<T>::extendBorderPel(unsigned margin, bool left, bool right, bool to
 template<typename T>
 void UnitBuf<T>::padBorderPel(unsigned margin, int dir) {
     for(unsigned i = 0; i < bufs.size(); i++) {
-        bufs[i].padBorderPel(margin >> getCompScaleX(ComponentID(i), chromaFormat), margin >> getCompScaleY(ComponentID(i), chromaFormat), dir);
+        bufs[i].padBorderPel(margin >> getComponentScaleX(ComponentID(i), chromaFormat), margin >> getComponentScaleY(ComponentID(i), chromaFormat), dir);
     }
 }
 
@@ -325,8 +325,8 @@ UnitBuf<T> UnitBuf<T>::subBuf(const Area & subArea) {
   unsigned block_idx = 0;
 
   for(auto &subAreaBuf : bufs) {
-    const int scaleX = getCompScaleX(ComponentID(block_idx), chromaFormat);
-    const int scaleY = getCompScaleY(ComponentID(block_idx), chromaFormat);
+    const int scaleX = getComponentScaleX(ComponentID(block_idx), chromaFormat);
+    const int scaleY = getComponentScaleY(ComponentID(block_idx), chromaFormat);
     const Area scaledArea(subArea.pos().x >> scaleX, subArea.pos().y >> scaleY, subArea.size().width >> scaleX, subArea.size().height >> scaleY);
     subBuf.bufs.push_back(subAreaBuf.subBuf(scaledArea.pos(), scaledArea.size()));
     block_idx++;
@@ -342,8 +342,8 @@ const UnitBuf<const T> UnitBuf<T>::subBuf(const Area & subArea) const {
   unsigned block_idx = 0;
 
   for(auto &subAreaBuf : bufs) {
-    const int scaleX = getCompScaleX(ComponentID(block_idx), chromaFormat);
-    const int scaleY = getCompScaleY(ComponentID(block_idx), chromaFormat);
+    const int scaleX = getComponentScaleX(ComponentID(block_idx), chromaFormat);
+    const int scaleY = getComponentScaleY(ComponentID(block_idx), chromaFormat);
     const Area scaledArea(subArea.pos().x >> scaleX, subArea.pos().y >> scaleY, subArea.size().width >> scaleX, subArea.size().height >> scaleY);
     subBuf.bufs.push_back(subAreaBuf.subBuf(scaledArea.pos(), scaledArea.size()));
     block_idx++;
@@ -364,7 +364,7 @@ PelStorage::~PelStorage() {
 }
 
 void PelStorage::swap(PelStorage& other) {
-    const uint32_t numCh = getNumberValidComps(chromaFormat);
+    const uint32_t numCh = getNumberValidComponents(chromaFormat);
 
     for(uint32_t i = 0; i < numCh; i++) {
         // check this otherwise it would turn out to get very weird
@@ -381,7 +381,7 @@ void PelStorage::swap(PelStorage& other) {
 void PelStorage::createFromBuf(PelUnitBuf buf) {
     chromaFormat = buf.chromaFormat;
 
-    const uint32_t numCh = getNumberValidComps(chromaFormat);
+    const uint32_t numCh = getNumberValidComponents(chromaFormat);
 
     bufs.resize(numCh);
 
@@ -400,7 +400,7 @@ void PelStorage::create(const ChromaFormat _chromaFormat, const Size& _size, con
 
     chromaFormat = _chromaFormat;
 
-    const uint32_t numCh = getNumberValidComps(_chromaFormat);
+    const uint32_t numCh = getNumberValidComponents(_chromaFormat);
 
     unsigned extHeight = _size.height;
     unsigned extWidth  = _size.width;
@@ -414,8 +414,8 @@ void PelStorage::create(const ChromaFormat _chromaFormat, const Size& _size, con
 
     for(uint32_t i = 0; i < numCh; i++) {
         const ComponentID compId = ComponentID(i);
-        const unsigned scaleX = getCompScaleX(compId, _chromaFormat);
-        const unsigned scaleY = getCompScaleY(compId, _chromaFormat);
+        const unsigned scaleX = getComponentScaleX(compId, _chromaFormat);
+        const unsigned scaleY = getComponentScaleY(compId, _chromaFormat);
 
         unsigned scaledHeight = extHeight >> scaleY ;
         unsigned scaledWidth  = extWidth  >> scaleX;
